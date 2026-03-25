@@ -71,41 +71,36 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant U as User (Browser)
-    participant F as Frontend (form.js and resources.js)
+    participant F as Frontend (form.js)
     participant B as Backend (Express Route)
     participant V as express-validator
     participant S as Resource Service
     participant DB as PostgreSQL
 
-    U->>F: Click Edit on resource
-    F->>B: GET /api/resources/:id
-    B-->>F: Resource data
-    F-->>U: Pre-filled edit form
-    
-    U->>F: Modify data and submit
+    U->>F: Submit updated form
     F->>F: Client-side validation
     F->>B: PUT /api/resources/:id (JSON)
-    
+
     B->>V: Validate request
     V-->>B: Validation result
-    
+
     alt Validation fails
         B-->>F: 400 Bad Request + errors[]
         F-->>U: Show validation message
     else Validation OK
         B->>S: updateResource(id, data)
-        S->>DB: UPDATE resources SET ... WHERE id = :id
-        
+        S->>DB: UPDATE resources WHERE id = :id
+
         alt Resource not found
-            S-->>B: null (affectedRows = 0)
+            DB-->>S: affectedRows = 0
+            S-->>B: Not found
             B-->>F: 404 Not Found
             F-->>U: Show "Resource not found"
-        else Update successful
+        else Success
             DB-->>S: Success
             S-->>B: Updated resource
             B-->>F: 200 OK
-            F->>F: Refresh resource list
-            F-->>U: Show "Update successful" message
+            F-->>U: Show "Update successful"
         end
     end
 ```
