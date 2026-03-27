@@ -90,14 +90,17 @@ sequenceDiagram
     else Validation OK
         B->>S: updateResource(id, data)
         S->>DB: UPDATE resources WHERE id = :id
+        DB-->>S: Result
 
         alt Resource not found
-            DB-->>S: affectedRows = 0
             S-->>B: Not found
             B-->>F: 404 Not Found
             F-->>U: Show "Resource not found"
+        else Duplicate name
+            S-->>B: Duplicate detected
+            B-->>F: 409 Conflict
+            F-->>U: Show duplicate message
         else Success
-            DB-->>S: Success
             S-->>B: Updated resource
             B-->>F: 200 OK
             F-->>U: Show "Update successful"
