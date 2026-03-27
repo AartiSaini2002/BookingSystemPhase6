@@ -77,33 +77,29 @@ sequenceDiagram
     participant S as Resource Service
     participant DB as PostgreSQL
 
-    U->>F: Submit updated form
+    U->>F: Edit and submit form
     F->>F: Client-side validation
-    F->>B: PUT /api/resources/:id (JSON)
+    F->>B: PUT /resources/:id (JSON)
 
     B->>V: Validate request
     V-->>B: Validation result
 
     alt Validation fails
-        B-->>F: 400 Bad Request + errors[]
-        F-->>U: Show validation message
+        B-->>F: 400 Bad Request
+        F-->>U: Show validation error
     else Validation OK
         B->>S: updateResource(id, data)
-        S->>DB: UPDATE resources WHERE id = :id
+        S->>DB: UPDATE resources
         DB-->>S: Result
 
-        alt Resource not found
-            S-->>B: Not found
+        alt Not found
+            S-->>B: No resource
             B-->>F: 404 Not Found
-            F-->>U: Show "Resource not found"
-        else Duplicate name
-            S-->>B: Duplicate detected
-            B-->>F: 409 Conflict
-            F-->>U: Show duplicate message
+            F-->>U: Show error
         else Success
             S-->>B: Updated resource
             B-->>F: 200 OK
-            F-->>U: Show "Update successful"
+            F-->>U: Show success message
         end
     end
 ```
