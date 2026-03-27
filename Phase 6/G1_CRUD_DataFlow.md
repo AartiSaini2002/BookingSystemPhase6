@@ -114,29 +114,20 @@ sequenceDiagram
     participant S as Resource Service
     participant DB as PostgreSQL
 
-    U->>F: Click Delete button
-    F->>F: Show confirmation dialog
-    U->>F: Confirm deletion
-    
-    F->>B: DELETE /api/resources/:id
+    U->>F: Click delete button
+    F->>B: DELETE /resources/:id
+
     B->>S: deleteResource(id)
-    S->>DB: DELETE FROM resources WHERE id = :id
-    
-    alt Resource not found
-        DB-->>S: affectedRows = 0
-        S-->>B: null
+    S->>DB: DELETE FROM resources
+    DB-->>S: Result
+
+    alt Not found
+        S-->>B: No resource
         B-->>F: 404 Not Found
-        F-->>U: Show "Resource not found"
-    else Foreign key constraint violation
-        DB-->>S: SQL Error (foreign key)
-        S-->>B: Conflict error
-        B-->>F: 409 Conflict
-        F-->>U: Show "Cannot delete: has existing bookings"
-    else Deletion successful
-        DB-->>S: affectedRows > 0
-        S-->>B: Success
+        F-->>U: Show error message
+    else Success
+        S-->>B: Deleted
         B-->>F: 204 No Content
-        F->>F: Remove from UI
-        F-->>U: Show "Resource deleted" message
+        F-->>U: Remove item from UI
     end
 ```
